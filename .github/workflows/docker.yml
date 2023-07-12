@@ -1,0 +1,37 @@
+name: Learn build and push image to Docker
+
+on:
+  push:
+    branchs: [ "test" ]
+
+env:
+  REGISTRY: nlcthong1997
+  IMAGE_NAME: learn-github-cicd
+
+jobs:
+  push_docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Using github runner repo
+      uses: actions/checkout@v3
+      
+      - name: Login Docker registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: $DOCKER_USERNAME
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
