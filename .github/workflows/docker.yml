@@ -14,11 +14,13 @@ jobs:
     steps:
       - name: Using github runner repo
         uses: actions/checkout@v3
-      
-      - name: Login Docker Hub
+
+      - name: Log account docker hub
         run: |
           echo $DOCKER_USERNAME,
           echo ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Login Docker Hub
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
           username: $DOCKER_USERNAME
