@@ -5,7 +5,7 @@ on:
     branchs: [ "test" ]
 
 env:
-  REGISTRY: nlcthong1997
+  DOCKER_HUB_NAMESPACE: nlcthong1997
   IMAGE_NAME: learn-github-cicd
 
 jobs:
@@ -15,10 +15,9 @@ jobs:
       - name: Using github runner repo
         uses: actions/checkout@v3
       
-      - name: Login Docker Hub registry
+      - name: Login Docker Hub
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
-          registry: ${{ env.REGISTRY }}
           username: $DOCKER_USERNAME
           password: ${{ secrets.DOCKER_PASSWORD }}
 
@@ -26,7 +25,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker images
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
