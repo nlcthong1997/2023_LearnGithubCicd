@@ -17,8 +17,7 @@ jobs:
 
       - name: Log account docker hub
         run: |
-          echo $DOCKER_USERNAME,
-          echo ${{ secrets.DOCKER_PASSWORD }}
+          echo "$DOCKER_USERNAME"
       
       - name: Login Docker Hub
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
