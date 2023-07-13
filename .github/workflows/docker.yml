@@ -11,64 +11,79 @@ env:
   TAG: latest
 
 jobs:
-  # push_docker_hub:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Using github runner repo
-  #       uses: actions/checkout@v3
-      
-  #     # Using lib
-  #     # - name: Use packege extenal Docker - Build and push image
-  #     #   uses: mr-smithers-excellent/docker-build-push@v6
-  #     #   with:
-  #     #     image: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}
-  #     #     tags: ${{ env.TAG }}
-  #     #     registry: ${{ env.REGISTRY }}
-  #     #     username: ${{ vars.DOCKER_USERNAME }}
-  #     #     password: ${{ secrets.DOCKER_PASSWORD }}
-
-
-  #     # Using tutorial
-  #     - name: Login Docker Hub
-  #       uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
-  #       with:
-  #         registry: ${{ env.REGISTRY }}
-  #         username: ${{ vars.DOCKER_USERNAME }}
-  #         password: ${{ secrets.DOCKER_PASSWORD }}
-
-  #     - name: Build and push Docker images
-  #       uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
-  #       with:
-  #         context: .
-  #         push: true
-  #         tags: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
-
-  push_docker_aws:
+  push_docker_hub:
     runs-on: ubuntu-latest
     steps:
       - name: Using github runner repo
         uses: actions/checkout@v3
+      
+      # Using lib
+      # - name: Use packege extenal Docker - Build and push image
+      #   uses: mr-smithers-excellent/docker-build-push@v6
+      #   with:
+      #     image: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}
+      #     tags: ${{ env.TAG }}
+      #     registry: ${{ env.REGISTRY }}
+      #     username: ${{ vars.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
+
 
       # Using tutorial
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
+      - name: Login Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.AWS_REGION }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@62f4f872db3836360b72999f4b87f1ff13310f3a
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        run: |
-          # Build a docker container and
-          # push it to ECR so that it can
-          # be deployed to ECS.
-          docker build -t $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }} .
-          docker push $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }}
-          echo "image=$ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }}" >> $GITHUB_OUTPUT
+      - name: Build and push Docker images
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+            ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.tags }}
+
+  # push_docker_aws:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Using github runner repo
+  #       uses: actions/checkout@v3
+
+  #     # Using tutorial
+  #     - name: Configure AWS credentials
+  #       uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: ${{ vars.AWS_REGION }}
+
+  #     - name: Login to Amazon ECR
+  #       id: login-ecr
+  #       uses: aws-actions/amazon-ecr-login@62f4f872db3836360b72999f4b87f1ff13310f3a
+
+  #     - name: Build, tag, and push image to Amazon ECR
+  #       id: build-image
+  #       env:
+  #         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+  #       run: |
+  #         # Build a docker container and
+  #         # push it to ECR so that it can
+  #         docker build -t $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }} .
+  #         docker push $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+
+  #         # Build a docker container tracking by id
+  #         # push it to ECR so that it can
+  #         docker build -t $ECR_REGISTRY/${{ env.IMAGE_NAME }} .
+  #         docker push $ECR_REGISTRY/${{ env.IMAGE_NAME }}
+
+  #         # be deployed to ECS.
+  #         echo "image=$ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }}" >> $GITHUB_OUTPUT
+  #         echo "image=$ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }}" >> $GITHUB_OUTPUT
