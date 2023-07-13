@@ -8,7 +8,6 @@ env:
   REGISTRY: docker.io
   DOCKER_HUB_NAMESPACE: nlcthong1997
   IMAGE_NAME: learn-github-cicd
-  TAG: latest
 
 jobs:
   push_docker:
@@ -37,10 +36,12 @@ jobs:
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+          images: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker images
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
           context: .
           push: true
+          tags: "latest"
+          labels: ${{ steps.meta.outputs.labels }}
