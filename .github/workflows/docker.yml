@@ -5,7 +5,7 @@ on:
     branchs: [ "test" ]
 
 env:
-  REGISTRY: https://hub.docker.com
+  REGISTRY: docker.io
   DOCKER_HUB_NAMESPACE: nlcthong1997
   IMAGE_NAME: learn-github-cicd
 
