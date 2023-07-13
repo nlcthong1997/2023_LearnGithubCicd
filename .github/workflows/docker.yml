@@ -8,7 +8,6 @@ env:
   REGISTRY: docker.io
   DOCKER_HUB_NAMESPACE: nlcthong1997
   IMAGE_NAME: learn-github-cicd
-  TAG: latest
 
 jobs:
   push_docker:
@@ -44,5 +43,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.TAG }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
