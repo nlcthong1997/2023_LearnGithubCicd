@@ -16,12 +16,12 @@ jobs:
       - name: Using github runner repo
         uses: actions/checkout@v3
       
-      - name: Use packege extenal Docker - Build
+      - name: Use packege extenal Docker - Build and push image
         uses: mr-smithers-excellent/docker-build-push@v6
         with:
           image: ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}
           registry: ${{ env.REGISTRY }}
-          username: $DOCKER_USERNAME
+          username: ${{ vars.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       # - name: Login Docker Hub
