@@ -81,8 +81,7 @@ jobs:
         run: |
           # Build a docker container and
           # push it to ECR so that it can
-          docker build -t $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }} 
-          docker build -t $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }} .
+          docker build -t $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }} -t $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }} .
           docker push $ECR_REGISTRY/${{ env.IMAGE_NAME }}
 
           # be deployed to ECS.
