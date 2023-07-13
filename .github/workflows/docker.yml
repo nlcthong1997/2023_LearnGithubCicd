@@ -113,5 +113,5 @@ jobs:
           context: .
           push: true
           tags: |
-            $ECR_REGISTRY_HANDMAKE/${{ env.IMAGE_NAME }}:${{ env.TAG }}
-            $ECR_REGISTRY_HANDMAKE/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
+            ${{ env.ECR_REGISTRY_HANDMAKE }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+            ${{ env.ECR_REGISTRY_HANDMAKE }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
