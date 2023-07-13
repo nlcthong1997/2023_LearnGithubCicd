@@ -43,7 +43,7 @@ jobs:
           push: true
           tags: |
             ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
-            ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha.short }}
+            ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha_short }}
 
   # push_docker_aws:
   #   runs-on: ubuntu-latest
