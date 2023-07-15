@@ -11,6 +11,8 @@ env:
   DOCKER_HUB_NAMESPACE: nlcthong1997
   IMAGE_NAME: learn-github-cicd
   TAG: latest
+  ECS_CLUSTER: learn-github-cicd
+  ECS_SERVICE: svc-learn-github-cicd-ecr
 
 jobs:
   push_docker_hub:
@@ -31,25 +33,25 @@ jobs:
 
 
       # Using tutorial
-      - name: Login Docker Hub
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ vars.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      # - name: Login Docker Hub
+      #   uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+      #   with:
+      #     registry: ${{ env.REGISTRY }}
+      #     username: ${{ vars.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Set outputs
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      # - name: Set outputs
+      #   id: vars
+      #   run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Build and push Docker images
-        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
-            ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
+      # - name: Build and push Docker images
+      #   uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+      #   with:
+      #     context: .
+      #     push: true
+      #     tags: |
+      #       ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+      #       ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
           # tags: |
           #   ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
           #   ${{ env.DOCKER_HUB_NAMESPACE }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
@@ -87,6 +89,58 @@ jobs:
   #         docker build -t $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }} .
   #         docker push $ECR_REGISTRY/${{ env.IMAGE_NAME }}
   #         echo "image=$ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }}" >> $GITHUB_OUTPUT
+  
+  push_docker_aws:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Using github runner repo
+        uses: actions/checkout@v3
+
+      - name: Set outputs
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      # Using tutorial
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DANH }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DANH }}
+          aws-region: ${{ vars.AWS_REGION_DANH }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@62f4f872db3836360b72999f4b87f1ff13310f3a
+
+      - name: Build, tag, and push image to Amazon ECR private
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          # Build a docker container and
+          # push it to ECR so that it can
+          #be deployed to ECS.
+          docker build -t $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }} .
+          docker push $ECR_REGISTRY/${{ env.IMAGE_NAME }}
+          docker build -t $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }} .
+          docker push $ECR_REGISTRY/${{ env.IMAGE_NAME }}
+          echo "image=$ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }}" >> $GITHUB_OUTPUT
+      
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: task-definition.json
+          container-name: ${{ env.IMAGE_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
 
   # push_docker_aws:
   #   runs-on: ubuntu-latest
@@ -115,29 +169,29 @@ jobs:
   #           ${{ env.ECR_REGISTRY_HANDMAKE }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
   #           ${{ env.ECR_REGISTRY_HANDMAKE }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
   
-  push_docker_aws:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Using github runner repo
-        uses: actions/checkout@v3
+  # push_docker_aws:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Using github runner repo
+  #       uses: actions/checkout@v3
 
-      # Using tutorial
-      - name: Login ECR
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
-        with:
-          registry: ${{ env.ECR_REGISTRY_HANDMAKE_DANH }}
-          username: ${{ secrets.AWS_ACCESS_KEY_ID_DANH }}
-          password: ${{ secrets.AWS_SECRET_ACCESS_KEY_DANH }}
+  #     # Using tutorial
+  #     - name: Login ECR
+  #       uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+  #       with:
+  #         registry: ${{ env.ECR_REGISTRY_HANDMAKE_DANH }}
+  #         username: ${{ secrets.AWS_ACCESS_KEY_ID_DANH }}
+  #         password: ${{ secrets.AWS_SECRET_ACCESS_KEY_DANH }}
 
-      - name: Set outputs
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+  #     - name: Set outputs
+  #       id: vars
+  #       run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Build and push Docker images
-        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ env.ECR_REGISTRY_HANDMAKE_DANH }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
-            ${{ env.ECR_REGISTRY_HANDMAKE_DANH }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
+  #     - name: Build and push Docker images
+  #       uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+  #       with:
+  #         context: .
+  #         push: true
+  #         tags: |
+  #           ${{ env.ECR_REGISTRY_HANDMAKE_DANH }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+  #           ${{ env.ECR_REGISTRY_HANDMAKE_DANH }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
