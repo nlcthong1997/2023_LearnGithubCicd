@@ -15,11 +15,11 @@ env:
   ECS_SERVICE: svc-learn-github-cicd-ecr
 
 jobs:
-  push_docker_hub:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Using github runner repo
-        uses: actions/checkout@v3
+  # push_docker_hub:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Using github runner repo
+  #       uses: actions/checkout@v3
       
       # Using lib
       # - name: Use packege extenal Docker - Build and push image
@@ -120,10 +120,10 @@ jobs:
           # Build a docker container and
           # push it to ECR so that it can
           #be deployed to ECS.
-          docker build -t $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }} .
-          docker push $ECR_REGISTRY/${{ env.IMAGE_NAME }}
           docker build -t $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }} .
-          docker push $ECR_REGISTRY/${{ env.IMAGE_NAME }}
+          docker tag $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }} $ECR_REGISTRY/${{ steps.vars.outputs.sha_short }}
+          docker push $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }} 
+          docker push $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
           echo "image=$ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }}" >> $GITHUB_OUTPUT
       
       - name: Fill in the new image ID in the Amazon ECS task definition
