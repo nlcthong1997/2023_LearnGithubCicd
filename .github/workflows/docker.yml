@@ -6,8 +6,7 @@ on:
 
 env:
   ECR_REGISTRY_HANDMAKE: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
-  # ECR_REGISTRY_HANDMAKE_DANH: ${{ vars.AWS_ACCOUNT_ID_DANH }}.dkr.ecr.${{ vars.AWS_REGION_DANH }}.amazonaws.com
-  ECR_REGISTRY_HANDMAKE_DANH: public.ecr.aws/n2k9v6p5
+  ECR_REGISTRY_HANDMAKE_DANH: ${{ vars.AWS_ACCOUNT_ID_DANH }}.dkr.ecr.${{ vars.AWS_REGION_DANH }}.amazonaws.com
   REGISTRY: docker.io
   DOCKER_HUB_NAMESPACE: nlcthong1997
   IMAGE_NAME: learn-github-cicd
