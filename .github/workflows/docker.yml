@@ -121,7 +121,7 @@ jobs:
           # push it to ECR so that it can
           #be deployed to ECS.
           docker build -t $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }} .
-          docker tag $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }} $ECR_REGISTRY/${{ steps.vars.outputs.sha_short }}
+          docker tag $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }} $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
           docker push $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }} 
           docker push $ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
           echo "image=$ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }}" >> $GITHUB_OUTPUT
