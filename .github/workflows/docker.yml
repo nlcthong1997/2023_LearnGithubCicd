@@ -6,6 +6,7 @@ on:
 
 env:
   ECR_REGISTRY_HANDMAKE: ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
+  ECR_REGISTRY_HANDMAKE_DANH: ${{ vars.AWS_ACCOUNT_ID_DANH }}.dkr.ecr.${{ vars.AWS_REGION_DANH }}.amazonaws.com
   REGISTRY: docker.io
   DOCKER_HUB_NAMESPACE: nlcthong1997
   IMAGE_NAME: learn-github-cicd
@@ -113,3 +114,30 @@ jobs:
   #         tags: |
   #           ${{ env.ECR_REGISTRY_HANDMAKE }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
   #           ${{ env.ECR_REGISTRY_HANDMAKE }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
+  
+  push_docker_aws:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Using github runner repo
+        uses: actions/checkout@v3
+
+      # Using tutorial
+      - name: Login Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          registry: ${{ env.ECR_REGISTRY_HANDMAKE }}
+          username: ${{ secrets.AWS_ACCESS_KEY_ID_DANH }}
+          password: ${{ secrets.AWS_SECRET_ACCESS_KEY_DANH }}
+
+      - name: Set outputs
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker images
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.ECR_REGISTRY_HANDMAKE_DANH }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
+            ${{ env.ECR_REGISTRY_HANDMAKE_DANH }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
