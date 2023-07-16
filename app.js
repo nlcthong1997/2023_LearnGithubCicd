@@ -3,7 +3,7 @@ const app = express()
 const port = 3000;
 
 app.get('/', (req, res) => {
-  res.send('GitHub CICD to deploy ECR and ECS Cluster | Development branch');
+  res.send('GitHub CICD to deploy ECR and ECS Cluster | Development');
 });
 
 app.get('/bind/:uriParam', (req, res) => {

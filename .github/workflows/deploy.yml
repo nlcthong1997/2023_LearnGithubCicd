@@ -6,10 +6,10 @@ on:
 
 env:
   ECS_CLUSTER: learn-github-cicd
-  ECS_SERVICE: svc-learn-github-cicd-ecr
-  ECS_TASK_DEFINITION: learn-github-cicd-task-df
+  ECS_SERVICE: learn-github-cicd-ecs-service
+  ECS_TASK_DEFINITION: learn-github-cicd-ecs-task-df
   IMAGE_NAME: learn-github-cicd
-  CONTAINER_NAME: learn-github-cicd
+  CONTAINER_NAME: learn-github-cicd-container
   TAG: latest
 
 jobs:
