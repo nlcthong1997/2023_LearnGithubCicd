@@ -50,9 +50,9 @@ jobs:
           echo "image=$ECR_REGISTRY/${{ env.IMAGE_NAME }}:${{ env.TAG }}" >> $GITHUB_OUTPUT
       
       # Dowload file for internal repo
-      - name: Download file task definition, created task in aws
+      - name: Download file task definition from task created in aws
         run: |
-            aws ecs describe-task-definition --task-definition ${{ vars.ECS_TASK_DEFINITION }} \
+            aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION }} \
             --query taskDefinition > task-definition.json
       
       - name: Fill in the new image ID in the Amazon ECS task definition
